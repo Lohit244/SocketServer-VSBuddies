@@ -1,6 +1,6 @@
-const io = require("socket.io")(3001,{
+const io = require("socket.io")(process.env.PORT||3001,{
     cors:{
-        origin:["http://localhost:3000"]
+        origin:["*"]
     }
 });
 
@@ -30,11 +30,11 @@ console.log("Server listening at port 3001");
 const socketId = {};
 const usersList = {};
 
-io.on("connection",async(socket)=>{
+io.on("connection",(socket)=>{
     console.log(socket.id);
 
     // on connecting client is sending user's email
-    socket.on("message",(email)=>{
+    socket.on("message",async(email)=>{
         // map socketId to email 
         socketId[socket.id] = email;
         // checks if this email has already established a connection with the server
@@ -49,9 +49,11 @@ io.on("connection",async(socket)=>{
                 status: true
             });
         }
+        console.log(socketId);
+        console.log(usersList);
     })
     // on disconnecting
-    socket.on("disconnect",()=>{
+    socket.on("disconnect",async()=>{
         // getting the user's email who disconnected
         email = socketId[socket.id];
         // remove this socket connection from socketId list
@@ -64,9 +66,11 @@ io.on("connection",async(socket)=>{
             // user has closed all the windows with VSBuddies signed in or/ may have signed out
             // set this user's status offline
             await db.collection("Users").doc(email).collection("Status").doc("Status").set({
-                status: true
+                status: false
             });
             delete usersList[email]; 
-        } 
+        }
+        console.log(socketId); 
+        console.log(usersList);
     })
 })
