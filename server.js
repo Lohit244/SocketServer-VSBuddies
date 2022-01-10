@@ -4,6 +4,27 @@ const io = require("socket.io")(3001,{
     }
 });
 
+const dotenv = require("dotenv");
+dotenv.config();
+
+const firebase = require("firebase");
+
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
 console.log("Server listening at port 3001");
 
 const socketId = {};
@@ -24,6 +45,9 @@ io.on("connection",async(socket)=>{
             // this user established connetion to server for the first time
             usersList[email] = 1;
             // set this user's status in ONLINE
+            await db.collection("Users").doc(email).collection("Status").doc("Status").set({
+                status: true
+            });
         }
     })
     // on disconnecting
@@ -39,6 +63,9 @@ io.on("connection",async(socket)=>{
             // since this user has 0 connection with the server
             // user has closed all the windows with VSBuddies signed in or/ may have signed out
             // set this user's status offline
+            await db.collection("Users").doc(email).collection("Status").doc("Status").set({
+                status: true
+            });
             delete usersList[email]; 
         } 
     })
