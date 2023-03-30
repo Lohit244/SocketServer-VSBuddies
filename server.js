@@ -1,11 +1,12 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const io = require("socket.io")(process.env.PORT||3001,{
     cors:{
         origin:"*"
     }
 });
 
-const dotenv = require("dotenv");
-dotenv.config();
 
 const firebase = require("firebase");
 
